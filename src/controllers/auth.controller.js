@@ -8,7 +8,7 @@ export const loginUserController = async (req, res) => {
     if (!rollno || !email || !password)
       return res.status(400).json({ message: "All field are required" });
 
-    const student = await User.findOne({ rollno, password });
+    const student = await User.findOne({ rollno, email });
 
     if (!student)
       return res

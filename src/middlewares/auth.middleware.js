@@ -3,7 +3,7 @@ import User from "../models/auth.model.js";
 
 export const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.cookie.new_cookie_sms_jwt;
+    const token = req.cookies.new_cookie_sms_jwt;
 
     if (!token)
       return res
