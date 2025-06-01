@@ -9,6 +9,12 @@ import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
+router.use((req, res, next) => {
+  console.log(`Auth route: ${req.method} ${req.originalUrl}`);
+  next();
+});
+
+
 router.post("/login", loginUserController);
 router.post("/sign-up", signUpUserController);
 router.post("/logout", logout);
