@@ -10,7 +10,7 @@ router.get(
   "/timetable",
   authMiddleware,
   roleMiddleware(["teacher"]),
-  getTimetable
+  getTimeTable
 );
 
 export default router;

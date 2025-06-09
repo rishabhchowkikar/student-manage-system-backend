@@ -1,8 +1,8 @@
-import Admin from "../models/Admin.js";
+import Admin from "../models/Admin.model.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/jwt.js";
 
-export const loginAuthController = async (req, res) => {
+export const loginAdminController = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -54,12 +54,10 @@ export const signUpAdminController = async (req, res) => {
 
     const admin = await Admin.findOne({ email });
     if (admin) {
-      return res
-        .status(400)
-        .json({
-          message: "Admin with this email already exists",
-          status: false,
-        });
+      return res.status(400).json({
+        message: "Admin with this email already exists",
+        status: false,
+      });
     }
 
     const salt = await bcrypt.genSalt(10);

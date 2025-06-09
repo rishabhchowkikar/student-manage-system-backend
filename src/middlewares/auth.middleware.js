@@ -33,9 +33,9 @@
 // };
 
 import jwt from "jsonwebtoken";
-import StudentPersonalDetail from "../models/StudentPersonalDetail.js";
-import Teacher from "../models/Teacher.js";
-import Admin from "../models/Admin.js";
+import StudentPersonalDetail from "../models/auth.model.js";
+import Teacher from "../models/Teacher.model.js";
+import Admin from "../models/Admin.model.js";
 
 const authMiddleware = async (req, res, next) => {
   try {

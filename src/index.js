@@ -40,7 +40,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/teacher", teacherRoutes);
 app.use("/api/academics", academicRoutes);
-app.use("/api/marks", examRoutes);
+app.use("/api/marks", marksRoutes);
 app.use("/api/exam", examRoutes);
 app.use("/api/hostel", hostelRoutes);
 

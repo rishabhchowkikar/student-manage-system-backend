@@ -39,7 +39,7 @@ import {
 import {
   loginStudentController,
   signUpStudentController,
-} from "../controllers/studentAuth.controller";
+} from "../controllers/studentAuth.controller.js";
 import {
   loginTeacherController,
   signUpTeacherController,
