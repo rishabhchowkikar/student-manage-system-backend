@@ -1,5 +1,23 @@
 import StudentPersonalDetailSchema from "../models/auth.model.js";
 
+// export const getProfile = async (req, res) => {
+//   try {
+//     const user = await StudentPersonalDetailSchema.findById(req.user._id)
+//       .populate("courseId")
+//       .select("-password");
+
+//     if (!user) {
+//       return res.status(404).json({
+//         data: { ...user.toObject(), role: req.user.role },
+//         status: true,
+//       });
+//     }
+//   } catch (error) {
+//     console.log(`error occur: ${error}`)
+//   }
+// };
+
+
 export const getProfile = async (req, res) => {
   try {
     const user = await StudentPersonalDetailSchema.findById(req.user._id)
@@ -8,13 +26,23 @@ export const getProfile = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
-        data: { ...user.toObject(), role: req.user.role },
-        status: true,
+        message: "Student not found",
+        status: false,
       });
     }
-  } catch (error) {}
-};
 
+    return res.status(200).json({
+      data: { ...user.toObject(), role: req.user.role },
+      status: true,
+    });
+  } catch (error) {
+    console.error("Error in getProfile:", error.message);
+    return res.status(500).json({
+      message: "Internal server error",
+      status: false,
+    });
+  }
+};
 export const updatePersonalDetailsController = async (req, res) => {
   try {
     const updateFields = {

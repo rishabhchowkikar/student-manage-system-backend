@@ -4,16 +4,16 @@ import bcrypt from "bcrypt";
 import { generateToken } from "../utils/jwt.js";
 
 export const loginStudentController = async (req, res) => {
-  const { email, password, rollno } = req.body;
+  const { email, password } = req.body;
 
   try {
-    if (!email || !password || !rollno) {
+    if (!email || !password) {
       return res
         .status(400)
         .json({ message: "All fields are required", status: false });
     }
 
-    const user = await StudentPersonalDetail.findOne({ rollno, email });
+    const user = await StudentPersonalDetail.findOne({ email });
     if (!user) {
       return res
         .status(401)

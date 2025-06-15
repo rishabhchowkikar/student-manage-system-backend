@@ -5,8 +5,24 @@ export const generateToken = (userId, role, res) => {
     expiresIn: "1d",
   });
 
-  res.cookie("new_cookie_sms_jwt", token, {
-    maxAge: 1 * 24 * 60 * 60 * 1000,
+  // Set cookie name based on role
+  let cookieName;
+  switch (role) {
+    case "admin":
+      cookieName = "admin_cookie_sms_jwt";
+      break;
+    case "student":
+      cookieName = "student_cookie_sms_jwt";
+      break;
+    case "teacher":
+      cookieName = "teacher_cookie_sms_jwt";
+      break;
+    default:
+      throw new Error("Invalid role");
+  }
+
+  res.cookie(cookieName, token, {
+    maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
     sameSite: "strict",
     secure: process.env.NODE_ENV !== "development",
