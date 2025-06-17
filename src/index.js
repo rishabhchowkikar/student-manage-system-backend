@@ -9,6 +9,7 @@ import academicRoutes from "./routes/academic.routes.js";
 import marksRoutes from "./routes/marks.routes.js";
 import examRoutes from "./routes/exam.routes.js";
 import hostelRoutes from "./routes/hostel.routes.js";
+import courseRoutes from "./routes/course.routes.js"
 import mongoConnectDB from "./config/db.js";
 
 dotenv.config();
@@ -43,6 +44,7 @@ app.use("/api/academics", academicRoutes);
 app.use("/api/marks", marksRoutes);
 app.use("/api/exam", examRoutes);
 app.use("/api/hostel", hostelRoutes);
+app.use("/api/course", courseRoutes)
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, "0.0.0.0", () => {
