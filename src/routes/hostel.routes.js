@@ -21,6 +21,8 @@ import express from "express";
 import {
   updateHostelDetails,
   getHostelDetails,
+  applyForBusPass,
+  getBusPassApplications
 } from "../controllers/hostel.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import roleMiddleware from "../middlewares/role.middleware.js";
@@ -39,6 +41,20 @@ router.get(
   roleMiddleware(["student","admin"]),
   authMiddleware,
   getHostelDetails
+);
+
+router.post(
+  "/apply-bus-pass",
+  roleMiddleware(["student"]),
+  authMiddleware,
+  applyForBusPass
+);
+
+router.get(
+  "/bus-pass-applications",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  getBusPassApplications
 );
 
 export default router;
