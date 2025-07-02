@@ -64,7 +64,14 @@ export const getTimeTable = async (req, res) => {
 
     const timeTable = await TimeTable.findOne({
       courseId: student.courseId,
-    }).populate("schedule.periods.subjectId");
+    }).populate({
+      path: "schedule.periods.subjectId",
+      populate: {
+        path: "teacherId",
+        select: "name email department",
+        model: "Teacher"
+      }
+  });
     res.json({ data: timeTable, status: true });
   } catch (error) {
     console.error(`Error in getTimeTable: ${error.message}`);

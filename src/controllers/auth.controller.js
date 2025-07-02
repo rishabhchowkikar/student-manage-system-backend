@@ -8,19 +8,40 @@ import Teacher from "../models/Teacher.model.js";
 export const logout = (req, res) => {
   try {
     console.log(
-      `User logged out: ID=${req.user._id}, Role=${
-        req.user.role
+      `User logged out: ID=${req.user._id}, Role=${req.user.role
       }, Time=${new Date().toISOString()}`
     );
 
-    res.cookie("new_cookie_sms_jwt", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 0,
-    });
+    if (req.user.role === "student") {
+      res.cookie("student_cookie_sms_jwt", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 0,
+      });
+      res.status(200).json({ message: "Logged out successfully", status: true });
+    }
 
-    res.status(200).json({ message: "Logged out successfully", status: true });
+    if (req.user.role === "admin") {
+      res.cookie("admin_cookie_sms_jwt", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 0,
+      });
+      res.status(200).json({ message: "Logged out successfully", status: true });
+    }
+
+    if (req.user.role === "teacher") {
+      res.cookie("teacher_cookie_sms_jwt", "", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 0,
+      });
+      res.status(200).json({ message: "Logged out successfully", status: true });
+    }
+
   } catch (error) {
     console.error(`Error in logout controller: ${error.message}`);
     res.status(500).json({ message: "Internal server error", status: false });
@@ -31,7 +52,7 @@ export const checkAuth = (req, res) => {
   try {
     res
       .status(200)
-      .json({ data: { ...req.user, role: req.user.role }, status: true });
+      .json({ data: { ...req.user, role: req.user.role }, status: true, message:"User Authenticated Successfully!" });
   } catch (error) {
     console.error(`Error in checkAuth controller: ${error.message}`);
     res.status(500).json({ message: "Internal server error", status: false });

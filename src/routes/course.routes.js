@@ -1,5 +1,5 @@
 import express from "express";
-import { addCourse, getCourseDetails, updateAssignedTeachers } from "../controllers/course.controller.js";
+import { addCourse, getCourseDetails, updateAssignedTeachers,getCoursesForSignup } from "../controllers/course.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import roleMiddleware from "../middlewares/role.middleware.js";
 
@@ -21,4 +21,5 @@ router.put(
   updateAssignedTeachers
 );
 
+router.get("/signup-courses", getCoursesForSignup);
 export default router;
