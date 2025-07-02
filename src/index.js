@@ -12,16 +12,15 @@ import marksRoutes from "./routes/marks.routes.js";
 import examRoutes from "./routes/exam.routes.js";
 import hostelRoutes from "./routes/hostel.routes.js";
 import courseRoutes from "./routes/course.routes.js"
+import paymentRoutes from "./routes/payment.routes.js";
 import mongoConnectDB from "./config/db.js";
-import { testCloudinaryConnection } from "./utils/cloudinary.js";
 
 const app = express();
 
 
 mongoConnectDB();
 
-// Test Cloudinary connection on startup
-testCloudinaryConnection();
+
 
 // middlewares
 app.use(express.json({limit: "10mb"  }));
@@ -45,14 +44,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use(cors());
-// app.use(cors({
-//   origin: "*",
-//   credentials: false
-// }));
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    // origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin:["https://bt3dvjjk-3000.inc1.devtunnels.ms", "http://localhost:3000",process.env.CLIENT_URL ],
     credentials: true,
   })
 );
@@ -87,6 +82,7 @@ app.use("/api/marks", marksRoutes);
 app.use("/api/exam", examRoutes);
 app.use("/api/hostel", hostelRoutes);
 app.use("/api/course", courseRoutes)
+app.use("/api/payment", paymentRoutes);
 
 
 const PORT = process.env.PORT || 4000;

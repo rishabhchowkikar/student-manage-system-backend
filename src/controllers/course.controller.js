@@ -109,98 +109,6 @@ export const addCourse = async (req, res) => {
   }
 };
 
-// export const getCourseDetails = async (req, res) => {
-//   try {
-//     const { courseId } = req.query; // Optional query parameter ?courseId=
-
-//     if (req.user.role === "admin") {
-//       // Admins can fetch any course or all courses
-//       if (courseId) {
-//         // Validate courseId format
-//         if (!mongoose.Types.ObjectId.isValid(courseId)) {
-//           return res.status(400).json({ message: "Invalid courseId format", status: false });
-//         }
-
-//         const course = await Course.findById(courseId)
-//           .populate("assignedTeachers", "name email")
-//           .populate("createdBy", "name email");
-        
-//         if (!course) {
-//           return res.status(404).json({ message: "Course not found", status: false });
-//         }
-
-//         res.status(200).json({ data: course, status: true });
-//       } else {
-//         // Fetch all courses
-//         const courses = await Course.find({})
-//           .populate("assignedTeachers", "name email")
-//           .populate("createdBy", "name email");
-        
-//         res.status(200).json({ data: courses, status: true });
-//       }
-//     } else if (req.user.role === "student") {
-//       // Students can only fetch their enrolled course
-//       if (!courseId) {
-//         return res.status(400).json({ message: "courseId is required for students", status: false });
-//       }
-
-//       // Validate courseId format
-//       if (!mongoose.Types.ObjectId.isValid(courseId)) {
-//         return res.status(400).json({ message: "Invalid courseId format", status: false });
-//       }
-
-//       // Check if the student is enrolled in the course
-//       const student = await StudentPersonalDetail.findById(req.user._id);
-//       if (!student) {
-//         return res.status(404).json({ message: "Student not found", status: false });
-//       }
-
-//       if (student.courseId.toString() !== courseId) {
-//         return res.status(403).json({ message: "You are not enrolled in this course", status: false });
-//       }
-
-//       const course = await Course.findById(courseId)
-//         .populate("assignedTeachers", "name email");
-      
-//       if (!course) {
-//         return res.status(404).json({ message: "Course not found", status: false });
-//       }
-
-//       res.status(200).json({ data: course, status: true });
-//     } else if (req.user.role === "teacher") {
-//       // Teachers can only fetch courses they are assigned to
-//       if (!courseId) {
-//         return res.status(400).json({ message: "courseId is required for teachers", status: false });
-//       }
-
-//       // Validate courseId format
-//       if (!mongoose.Types.ObjectId.isValid(courseId)) {
-//         return res.status(400).json({ message: "Invalid courseId format", status: false });
-//       }
-
-//       const course = await Course.findOne({
-//         _id: courseId,
-//         assignedTeachers: req.user._id,
-//       }).populate("assignedTeachers", "name email");
-
-//       if (!course) {
-//         return res.status(403).json({
-//           message: "Course not found or you are not assigned to this course",
-//           status: false,
-//         });
-//       }
-
-//       res.status(200).json({ data: course, status: true });
-//     } else {
-//       return res.status(403).json({ message: "Access denied", status: false });
-//     }
-//   } catch (error) {
-//     console.error(`Error in getCourseDetails: ${error.message}`);
-//     res.status(500).json({ message: "Server error", status: false });
-//   }
-// };
-
-
 export const getCourseDetails = async (req, res) => {
   try {
     if (req.user.role === "admin") {
@@ -319,5 +227,51 @@ export const updateAssignedTeachers = async (req, res) => {
   } catch (error) {
     console.error(`Error in updateAssignedTeachers: ${error.message}`);
     res.status(500).json({ message: "Server error", status: false });
+  }
+};
+
+
+export const getCoursesForSignup = async (req, res) => {
+  try {
+    console.log('Fetching courses for signup dropdown...');
+    
+    // Fetch only active courses with minimal required fields
+    const courses = await Course.find({ isActive: true })
+      .select('_id name code department school') // Only select required fields
+      .sort({ name: 1 }); // Sort by name alphabetically
+
+    if (!courses || courses.length === 0) {
+      return res.status(404).json({
+        message: "No active courses found",
+        status: false,
+        data: []
+      });
+    }
+
+    // Transform data for dropdown usage
+    const coursesForDropdown = courses.map(course => ({
+      _id: course._id,
+      name: course.name,
+      code: course.code,
+      department: course.department,
+      school: course.school,
+      displayName: `${course.name} (${course.code})` // For better dropdown display
+    }));
+
+    console.log(`Found ${coursesForDropdown.length} active courses`);
+
+    res.status(200).json({
+      message: "Courses fetched successfully",
+      status: true,
+      data: coursesForDropdown
+    });
+
+  } catch (error) {
+    console.error("Error fetching courses for signup:", error.message);
+    res.status(500).json({
+      message: "Internal server error",
+      status: false,
+      error: error.message
+    });
   }
 };

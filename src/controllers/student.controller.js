@@ -1,24 +1,6 @@
 import StudentPersonalDetailSchema from "../models/auth.model.js";
 import cloudinary from "../utils/cloudinary.js";
 
-// export const getProfile = async (req, res) => {
-//   try {
-//     const user = await StudentPersonalDetailSchema.findById(req.user._id)
-//       .populate("courseId")
-//       .select("-password");
-
-//     if (!user) {
-//       return res.status(404).json({
-//         data: { ...user.toObject(), role: req.user.role },
-//         status: true,
-//       });
-//     }
-//   } catch (error) {
-//     console.log(`error occur: ${error}`)
-//   }
-// };
-
-
 export const getProfile = async (req, res) => {
   try {
     const user = await StudentPersonalDetailSchema.findById(req.user._id)
@@ -46,70 +28,35 @@ export const getProfile = async (req, res) => {
 };
 
 
-// export const updatePersonalDetailsController = async (req, res) => {
-//   try {
-//     const updateFields = {
-//       phone: req.body.phone,
-//       altPhone: req.body.phone,
-//       mobile: req.body.mobile,
-//       address: req.body.address,
-//       dob: req.body.dob,
-//       gender: req.body.gender,
-//       isPwd: req.body.isPwd,
-//       category: req.body.category,
-//       nationality: req.body.nationality,
-//       bloodGroup: req.body.bloodGroup,
-//       aadharNumber: req.body.aadharNumber,
-//       photo: req.body.photo,
-//       fatherName: req.body.fatherName,
-//       motherName: req.body.motherName,
-//     };
-
-//     const filteredUpdates = Object.fromEntries(
-//       Object.entries(updateFields).filter(([_, value]) => value !== undefined)
-//     );
-
-//     const updatedStudentDetails =
-//       await StudentPersonalDetailSchema.findByIdAndUpdate(
-//         req.user._id,
-//         { $set: filteredUpdates },
-//         { new: true, runValidators: true }
-//       ).select("-password");
-
-//     if (!updatedStudentDetails) {
-//       return res
-//         .status(404)
-//         .json({ message: "Student not found", status: false });
-//     }
-
-//     res.status(200).json({
-//       message: "Personal details updated successfully",
-//       status: true,
-//       data: { ...updatedStudentDetails.toObject(), role: req.user.role },
-//     });
-//   } catch (error) {
-//     console.log("Error updating personal details:", error.message);
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
-
-
 export const updatePersonalDetailsController = async (req, res) => {
   try {
-    let photoUrl = req.body.photo; // Keep existing photo URL if no new file is uploaded
+    // PEHLE CHECK KARO KI USER KO PERMISSION HAI YA NAHI
+    const user = await StudentPersonalDetailSchema.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({
+        message: "Student not found",
+        status: false,
+      });
+    }
+
+    // Permission check - YE NAYA LOGIC HAI
+    if (user.updatePermissionStatus !== "approved") {
+      return res.status(403).json({
+        message: "Admin permission required to update profile",
+        status: false,
+        permissionStatus: user.updatePermissionStatus,
+        needsPermission: true
+      });
+    }
+
+    // BAAKI EXISTING CODE SAME RAHEGA - photo upload, etc.
+    let photoUrl = req.body.photo;
     
     // Handle file upload from form-data (multer)
     if (req.file) {
       try {
         console.log("Uploading photo to Cloudinary from form-data...");
-        console.log("File info:", {
-          fieldname: req.file.fieldname,
-          originalname: req.file.originalname,
-          mimetype: req.file.mimetype,
-          size: req.file.size
-        });
-        
-        // Convert buffer to base64 for Cloudinary upload
         const fileStr = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
         
         const uploadResult = await cloudinary.uploader.upload(fileStr, {
@@ -134,7 +81,7 @@ export const updatePersonalDetailsController = async (req, res) => {
         });
       }
     }
-    // Handle base64 data from JSON request (backward compatibility)
+    // Handle base64 data from JSON request
     else if (req.body.photo && req.body.photo.startsWith("data:image/")) {
       try {
         console.log("Uploading photo to Cloudinary from base64...");
@@ -172,15 +119,20 @@ export const updatePersonalDetailsController = async (req, res) => {
       nationality: req.body.nationality,
       bloodGroup: req.body.bloodGroup,
       aadharNumber: req.body.aadharNumber,
-      photo: photoUrl, // Use the Cloudinary URL or existing URL
+      photo: photoUrl,
       fatherName: req.body.fatherName,
       motherName: req.body.motherName,
+      want_to_apply_for_hostel: req.body.want_to_apply_for_hostel,
+      
+      // UPDATE PERMISSION STATUS RESET KARO SUCCESSFUL UPDATE KE BAAD
+      updatePermissionStatus: "none", // Reset after successful update
+      updatePermissionApprovedDate: null,
+      adminComments: null
     };
 
-    // Filter out undefined values, but keep false values for booleans
     const filteredUpdates = Object.fromEntries(
       Object.entries(updateFields).filter(([key, value]) => {
-        if (key === 'isPwd') return value !== undefined; // Keep boolean values
+        if (key === 'isPwd' || key === 'want_to_apply_for_hostel') return value !== undefined;
         return value !== undefined && value !== null && value !== '';
       })
     );
@@ -194,9 +146,7 @@ export const updatePersonalDetailsController = async (req, res) => {
     ).select("-password");
 
     if (!updatedStudentDetails) {
-      return res
-        .status(404)
-        .json({ message: "Student not found", status: false });
+      return res.status(404).json({ message: "Student not found", status: false });
     }
 
     res.status(200).json({
@@ -213,4 +163,73 @@ export const updatePersonalDetailsController = async (req, res) => {
       error: error.message
     });
   }
-}
+};
+
+// updated code to handle update permission request
+export const requestUpdatePermission = async (req, res) => {
+  try {
+    const { reason } = req.body; 
+    
+    const updatedUser = await StudentPersonalDetailSchema.findByIdAndUpdate(
+      req.user._id,
+      {
+        updatePermissionStatus: "requested",
+        updatePermissionRequestDate: new Date(),
+        updatePermissionReason: reason || "Profile update request"
+      },
+      { new: true }
+    ).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: "Student not found",
+        status: false,
+      });
+    }
+
+    res.status(200).json({
+      message: "Permission request sent to admin successfully",
+      status: true,
+      permissionStatus: "requested"
+    });
+  } catch (error) {
+    console.error("Error requesting permission:", error.message);
+    res.status(500).json({
+      message: "Internal Server Error",
+      status: false,
+      error: error.message
+    });
+  }
+};
+
+export const getUpdatePermissionStatus = async (req, res) => {
+  try {
+    const user = await StudentPersonalDetailSchema.findById(req.user._id)
+      .select("updatePermissionStatus updatePermissionRequestDate updatePermissionApprovedDate updatePermissionRejectedDate adminComments");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Student not found",
+        status: false,
+      });
+    }
+
+    res.status(200).json({
+      status: true,
+      permissionData: {
+        status: user.updatePermissionStatus,
+        requestDate: user.updatePermissionRequestDate,
+        approvedDate: user.updatePermissionApprovedDate,
+        rejectedDate: user.updatePermissionRejectedDate,
+        adminComments: user.adminComments
+      }
+    });
+  } catch (error) {
+    console.error("Error getting permission status:", error.message);
+    res.status(500).json({
+      message: "Internal Server Error",
+      status: false,
+      error: error.message
+    });
+  }
+};

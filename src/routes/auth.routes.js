@@ -16,7 +16,12 @@ import {
   loginAdminController,
   signUpAdminController,
 } from "../controllers/adminAuth.controller.js";
-import { updatePersonalDetailsController } from "../controllers/student.controller.js";
+import {
+  updatePersonalDetailsController,
+  getUpdatePermissionStatus,
+  requestUpdatePermission
+} from "../controllers/student.controller.js";
+
 import authMiddleware from "../middlewares/auth.middleware.js"
 import roleMiddleware from "../middlewares/role.middleware.js";
 import multer from "multer";
@@ -106,5 +111,17 @@ router.put(
   authMiddleware,
   changePassword
 );
+
+router.post("/request-update-permission",
+  roleMiddleware(["student"]),
+  authMiddleware,
+  requestUpdatePermission
+)
+
+router.get("/update-permission-status",
+  roleMiddleware(["student"]),
+  authMiddleware,
+  getUpdatePermissionStatus
+)
 
 export default router;
