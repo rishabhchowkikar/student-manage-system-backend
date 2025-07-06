@@ -12,7 +12,13 @@ const hostelSchema = new mongoose.Schema({
   hostelName: { type: String, required: true },
   allocated: { type: Boolean, default: false },
   
-  // Payment related fields
+
+  academicYear: { 
+    type: String, 
+    required: true,
+  },
+  
+
   paymentStatus: { 
     type: String, 
     enum: ["pending", "paid", "failed"], 
@@ -23,13 +29,15 @@ const hostelSchema = new mongoose.Schema({
   razorpayPaymentId: { type: String },
   paymentDate: { type: Date },
   
-  // Admin notification
+
   adminNotified: { type: Boolean, default: false },
   
-  // Timestamps
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
+
+// Add compound index for efficient queries
+hostelSchema.index({ userId: 1, academicYear: 1 });
 
 const Hostel = mongoose.model("Hostel", hostelSchema);
 export default Hostel;

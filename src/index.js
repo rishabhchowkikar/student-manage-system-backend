@@ -14,6 +14,7 @@ import hostelRoutes from "./routes/hostel.routes.js";
 import courseRoutes from "./routes/course.routes.js"
 import paymentRoutes from "./routes/payment.routes.js";
 import mongoConnectDB from "./config/db.js";
+import courseFeesRoutes from "./routes/coursefee.routes.js"
 
 const app = express();
 
@@ -83,6 +84,7 @@ app.use("/api/exam", examRoutes);
 app.use("/api/hostel", hostelRoutes);
 app.use("/api/course", courseRoutes)
 app.use("/api/payment", paymentRoutes);
+app.use("/api/course-fees",courseFeesRoutes)
 
 
 const PORT = process.env.PORT || 4000;
