@@ -1,5 +1,4 @@
-import StudentPersonalDetail from "../models/auth.model.js";
-import Course from "../models/course.model.js";
+import Course from "../models/Course.model.js";
 import Teacher from "../models/Teacher.model.js";
 import mongoose from "mongoose";
 

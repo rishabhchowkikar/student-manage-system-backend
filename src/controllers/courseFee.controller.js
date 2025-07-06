@@ -1,10 +1,7 @@
 // controllers/courseFees.controller.js
-import CourseFees from "../models/CourseFee.model.js";
+import CourseFees from "../models/CourseFees.model.js";
 import FeeStructure from "../models/FeeStructure.model.js";
-import StudentPersonalDetail from "../models/auth.model.js";
-import Course from "../models/CourseFee.model.js";
-import mongoose from "mongoose";
-import Razorpay from "razorpay";
+import Auth from "../models/Auth.model.js";
 import crypto from "crypto";
 import razorpay from "../utils/razorpay.js";
 
@@ -29,7 +26,7 @@ export const getFeeStructure = async (req, res) => {
     const currentYear = academicYear || getCurrentAcademicYear();
 
     // Get student details to find their courseId
-    const student = await StudentPersonalDetail.findById(req.user._id)
+    const student = await Auth.findById(req.user._id)
       .populate('courseId');
 
     if (!student) {
@@ -81,7 +78,7 @@ export const getStudentFeeStatus = async (req, res) => {
     const { academicYear } = req.query;
 
     // Get student details
-    const student = await StudentPersonalDetail.findById(studentId)
+    const student = await Auth.findById(studentId)
       .populate('courseId', 'name code department school');
 
     if (!student) {
@@ -145,7 +142,7 @@ export const createCourseFeesOrder = async (req, res) => {
     }
 
     // Get student details
-    const student = await StudentPersonalDetail.findById(studentId)
+    const student = await Auth.findById(studentId)
       .populate('courseId');
 
     if (!student) {
@@ -555,7 +552,7 @@ export const generateYearwiseFeeRecords = async (req, res) => {
     const studentId = req.user._id;
 
     // Get student details
-    const student = await StudentPersonalDetail.findById(studentId)
+    const student = await Auth.findById(studentId)
       .populate('courseId');
 
     if (!student) {

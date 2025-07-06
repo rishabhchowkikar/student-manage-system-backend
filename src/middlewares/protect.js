@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import StudentPersonalDetailSchema from "../models/auth.model.js";
+import Auth from "../models/Auth.model.js";
 
 export const protect = async (req, res, next) => {
   try {
@@ -9,7 +9,7 @@ export const protect = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_key);
 
-    req.user = await StudentPersonalDetailSchema.findById(
+    req.user = await Auth.findById(
       decoded.userId
     ).select("-password");
     next();
