@@ -54,7 +54,40 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-  res.send("yes the backend is working fine");
+  const serverStatus = {
+    message: "Server is running successfully! 🚀",
+    status: "active",
+    timestamp: new Date().toISOString(),
+    server: {
+      name: "Student Management System API",
+      version: "1.0.0",
+      environment: process.env.NODE_ENV || "development",
+      port: process.env.PORT || 4000
+    },
+    endpoints: {
+      auth: "/api/auth",
+      student: "/api/student",
+      teacher: "/api/teacher",
+      academics: "/api/academics",
+      marks: "/api/marks",
+      exam: "/api/exam",
+      hostel: "/api/hostel",
+      course: "/api/course",
+      payment: "/api/payment",
+      courseFees: "/api/course-fees"
+    },
+    health: {
+      uptime: process.uptime(),
+      memory: {
+        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + " MB",
+        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + " MB"
+      },
+      platform: process.platform,
+      nodeVersion: process.version
+    }
+  };
+
+  res.status(200).json(serverStatus);
 });
 
 // Test endpoint for Cloudinary
