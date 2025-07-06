@@ -1,9 +1,9 @@
-import StudentPersonalDetailSchema from "../models/auth.model.js";
+import Auth from "../models/Auth.model.js";
 import cloudinary from "../utils/cloudinary.js";
 
 export const getProfile = async (req, res) => {
   try {
-    const user = await StudentPersonalDetailSchema.findById(req.user._id)
+    const user = await Auth.findById(req.user._id)
       .populate("courseId")
       .select("-password");
 
@@ -31,7 +31,7 @@ export const getProfile = async (req, res) => {
 export const updatePersonalDetailsController = async (req, res) => {
   try {
     // PEHLE CHECK KARO KI USER KO PERMISSION HAI YA NAHI
-    const user = await StudentPersonalDetailSchema.findById(req.user._id);
+    const user = await Auth.findById(req.user._id);
     
     if (!user) {
       return res.status(404).json({
@@ -139,7 +139,7 @@ export const updatePersonalDetailsController = async (req, res) => {
 
     console.log("Filtered updates:", filteredUpdates);
 
-    const updatedStudentDetails = await StudentPersonalDetailSchema.findByIdAndUpdate(
+    const updatedStudentDetails = await Auth.findByIdAndUpdate(
       req.user._id,
       { $set: filteredUpdates },
       { new: true, runValidators: true }
@@ -170,7 +170,7 @@ export const requestUpdatePermission = async (req, res) => {
   try {
     const { reason } = req.body; 
     
-    const updatedUser = await StudentPersonalDetailSchema.findByIdAndUpdate(
+    const updatedUser = await Auth.findByIdAndUpdate(
       req.user._id,
       {
         updatePermissionStatus: "requested",
@@ -204,7 +204,7 @@ export const requestUpdatePermission = async (req, res) => {
 
 export const getUpdatePermissionStatus = async (req, res) => {
   try {
-    const user = await StudentPersonalDetailSchema.findById(req.user._id)
+    const user = await Auth.findById(req.user._id)
       .select("updatePermissionStatus updatePermissionRequestDate updatePermissionApprovedDate updatePermissionRejectedDate adminComments");
 
     if (!user) {

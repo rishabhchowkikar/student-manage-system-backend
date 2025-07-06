@@ -1,8 +1,8 @@
 import Subject from "../models/Subject.model.js";
 import TimeTable from "../models/TimeTable.model.js";
-import StudentPersonalDetail from "../models/auth.model.js";
+import Auth from "../models/Auth.model.js";
 import Teacher from "../models/Teacher.model.js";
-import Admin from "../models/Admin.model.js";
+
 
 // this will create the subject in the db
 export const createSubject = async (req, res) => {
@@ -25,7 +25,7 @@ export const createSubject = async (req, res) => {
 
 export const getSubjects = async (req, res) => {
   try {
-    const student = await StudentPersonalDetail.findById(req.user._id);
+    const student = await Auth.findById(req.user._id);
     const subjects = await Subject.find({
       courseId: student.courseId,
     }).populate("teacherId", "name email");
@@ -60,7 +60,7 @@ export const createTimeTable = async (req, res) => {
 
 export const getTimeTable = async (req, res) => {
   try {
-    const student = await StudentPersonalDetail.findById(req.user._id);
+    const student = await Auth.findById(req.user._id);
 
     const timeTable = await TimeTable.findOne({
       courseId: student.courseId,

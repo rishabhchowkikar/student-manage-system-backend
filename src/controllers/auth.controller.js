@@ -1,7 +1,4 @@
-// this controller handle the student/ teacher ,
-// checkAuth, Logout, changePassword
-
-import StudentPersonalDetail from "../models/auth.model.js";
+import Auth from "../models/Auth.model.js";
 import bcrypt from "bcrypt";
 import Teacher from "../models/Teacher.model.js";
 
@@ -71,7 +68,7 @@ export const changePassword = async (req, res) => {
 
     let user;
     if (req.user.role === "student") {
-      user = await StudentPersonalDetail.findById(req.user._id);
+      user = await Auth.findById(req.user._id);
     } else if (req.user.role === "teacher") {
       user = await Teacher.findById(req.user._id);
     } else {

@@ -1,5 +1,5 @@
-import StudentPersonalDetail from "../models/auth.model.js";
-import Course from "../models/course.model.js";
+import Auth from "../models/Auth.model.js";
+import Course from "../models/Course.model.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../utils/jwt.js";
 
@@ -13,7 +13,7 @@ export const loginStudentController = async (req, res) => {
         .json({ message: "All fields are required", status: false });
     }
 
-    const user = await StudentPersonalDetail.findOne({ email });
+    const user = await Auth.findOne({ email });
     if (!user) {
       return res
         .status(401)
@@ -51,7 +51,7 @@ export const signUpStudentController = async (req, res) => {
         .json({ message: "All fields are required", status: false });
     }
 
-    const student = await StudentPersonalDetail.findOne({ email });
+    const student = await Auth.findOne({ email });
     if (student) {
       return res.status(400).json({
         message: "Student with this email already exists",
@@ -65,7 +65,7 @@ export const signUpStudentController = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
-    const newStudent = new StudentPersonalDetail({
+    const newStudent = new Auth({
       name,
       email,
       password: hashPassword,

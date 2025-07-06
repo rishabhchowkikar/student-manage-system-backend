@@ -1,34 +1,7 @@
 import Marks from "../models/Marks.model.js";
 import Attendance from "../models/Attendance.model.js";
 import Subject from "../models/Subject.model.js";
-import StudentPersonalDetail from "../models/auth.model.js";
-
-// export const uploadClassAttendance = async (req, res) => {
-//   try {
-//     const { subjectId, semester, attendance } = req.body;
-//     const subject = await Subject.findById(subjectId);
-//     if (!subject || subject.teacherId.toString() !== req.user._id) {
-//       return res.status(403).json({
-//         message: "Not authorized to update attendance for this subject",
-//         status: false,
-//       });
-//     }
-
-//     for (const { studentId, totalClasses, attendedClasses } of attendance) {
-//       const percentage = (attendedClasses / totalClasses) * 100;
-//       await Attendance.findOneAndUpdate(
-//         { studentId, subjectId, semester },
-//         { totalClasses, attendedClasses, percentage },
-//         { upsert: true, new: true }
-//       );
-//     }
-
-//     res.json({ message: "Attendance updated successfully", status: true });
-//   } catch (error) {
-//     console.error(`Error in uploadClassAttendance: ${error.message}`);
-//     res.status(500).json({ message: "Server error", status: false });
-//   }
-// };
+import Admin from "../models/Admin.model.js";
 
 export const uploadClassAttendance = async (req, res) => {
   try {
@@ -56,7 +29,7 @@ export const uploadClassAttendance = async (req, res) => {
 
     // Validate that all students exist and are enrolled in the subject's course
     const studentIds = attendance.map((entry) => entry.studentId);
-    const students = await StudentPersonalDetail.find({ _id: { $in: studentIds }, courseId: subject.courseId });
+    const students = await Admin.find({ _id: { $in: studentIds }, courseId: subject.courseId });
     const validStudentIds = students.map((student) => student._id.toString());
 
     const updatedAttendance = []; // Array to store updated or created attendance
@@ -132,7 +105,7 @@ export const uploadClassMarks = async (req, res) => {
 
     // Validate that all students exist and are enrolled in the subject's course
     const studentIds = marks.map((mark) => mark.studentId);
-    const students = await StudentPersonalDetail.find({ _id: { $in: studentIds }, courseId: subject.courseId });
+    const students = await Admin.find({ _id: { $in: studentIds }, courseId: subject.courseId });
     const validStudentIds = students.map((student) => student._id.toString());
 
     const updatedMarks = []; // Array to store updated or created marks
@@ -197,7 +170,7 @@ export const updateClassMarks = async (req, res) => {
     }
 
     // Validate that the student exists and is enrolled in the subject's course
-    const student = await StudentPersonalDetail.findOne({ _id: studentId, courseId: subject.courseId });
+    const student = await Admin.findOne({ _id: studentId, courseId: subject.courseId });
     if (!student) {
       return res.status(400).json({ message: `Student with ID ${studentId} not found or not enrolled in the course`, status: false });
     }
@@ -262,7 +235,7 @@ export const getStudentAttendance = async (req, res) => {
 //         });
 //     }
 
-//     const students = await StudentPersonalDetail.find({
+//     const students = await Admin.find({
 //       courseId: subject.courseId,
 //     });
 //     res.json({ data: students, status: true });
@@ -287,7 +260,7 @@ export const getClassList = async (req, res) => {
     }
 
     // Fetch students enrolled in the course associated with the subject
-    const students = await StudentPersonalDetail.find({ courseId: subject.courseId }).select(
+    const students = await Admin.find({ courseId: subject.courseId }).select(
       "-password"
     );
 

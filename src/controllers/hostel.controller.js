@@ -1,6 +1,6 @@
 import Hostel from "../models/Hostel.model.js";
-import Course from "../models/course.model.js";
-import StudentPersonalDetail from "../models/auth.model.js";
+import Course from "../models/Course.model.js";
+import Auth from "../models/Auth.model.js";
 import BusPass from "../models/BusPass.model.js";
 import mongoose from "mongoose";
 
@@ -37,7 +37,7 @@ export const updateHostelDetails = async (req, res) => {
     }
 
     // Ensure the userId corresponds to a student
-    const student = await StudentPersonalDetail.findById(userId).select("want_to_apply_for_hostel");
+    const student = await Auth.findById(userId).select("want_to_apply_for_hostel");
     if (!student) {
       return res.status(404).json({ message: "Student not found", status: false });
     }
@@ -96,7 +96,7 @@ export const getHostelDetails = async (req, res) => {
       .populate({
         path: "userId",
         select: "name email rollno courseId",
-        model: StudentPersonalDetail,
+        model: Auth,
         populate: {
           path: "courseId",
           select: "name department school code",
@@ -134,7 +134,7 @@ export const getHostelDetails = async (req, res) => {
           .populate({
             path: "userId",
             select: "name email rollno courseId",
-            model: StudentPersonalDetail,
+            model: Auth,
             populate: {
               path: "courseId",
               select: "name department school code",
@@ -162,7 +162,7 @@ export const getHostelDetails = async (req, res) => {
           .populate({
             path: "userId",
             select: "name email rollno courseId",
-            model: StudentPersonalDetail,
+            model: Auth,
             populate: {
               path: "courseId",
               select: "name department school code",
@@ -201,7 +201,7 @@ export const getHostelPaymentHistory = async (req, res) => {
     .populate({
       path: "userId",
       select: "name email rollno courseId",
-      model: StudentPersonalDetail,
+      model: Auth,
       populate: {
         path: "courseId",
         select: "name department school code",
@@ -252,7 +252,7 @@ export const getHostelPaymentByYear = async (req, res) => {
     .populate({
       path: "userId",
       select: "name email rollno courseId",
-      model: StudentPersonalDetail,
+      model: Auth,
       populate: {
         path: "courseId",
         select: "name department school code",
@@ -333,7 +333,7 @@ export const updatePaymentStatus = async (req, res) => {
     ).populate({
       path: "userId",
       select: "name email rollno courseId",
-      model: StudentPersonalDetail,
+      model: Auth,
       populate: {
         path: "courseId",
         select: "name department school code",
@@ -371,7 +371,7 @@ export const applyForBusPass = async (req, res) => {
     }
 
     // Fetch student details from logged-in user
-    const student = await StudentPersonalDetail.findById(req.user._id);
+    const student = await Auth.findById(req.user._id);
     if (!student) {
       return res.status(404).json({ message: "Student not found", status: false });
     }
@@ -397,7 +397,7 @@ export const applyForBusPass = async (req, res) => {
     }
 
     // Populate course details
-    const populatedStudent = await StudentPersonalDetail.findById(req.user._id)
+    const populatedStudent = await Auth.findById(req.user._id)
       .populate({
         path: "courseId",
         select: "name department school",
@@ -449,7 +449,7 @@ export const getBusPassApplications = async (req, res) => {
       .populate({
         path: "studentId",
         select: "name email rollno address phone courseId", // Match schema fields
-        model: StudentPersonalDetail,
+        model: Auth,
         populate: {
           path: "courseId",
           select: "name department school", // Include department and school
@@ -484,7 +484,7 @@ export const getBusPassApplications = async (req, res) => {
 export const getStudentBusPass = async (req, res) => {
   try {
     // Always fetch the student details
-    const student = await StudentPersonalDetail.findById(req.user._id)
+    const student = await Auth.findById(req.user._id)
       .populate({
         path: "courseId",
         select: "name department school",
@@ -511,7 +511,7 @@ export const getStudentBusPass = async (req, res) => {
       .populate({
         path: "studentId",
         select: "name email rollno address phone courseId dob want_to_apply_for_hostel",
-        model: StudentPersonalDetail,
+        model: Auth,
         populate: {
           path: "courseId",
           select: "name department school",
