@@ -11,34 +11,31 @@ import academicRoutes from "./routes/academic.routes.js";
 import marksRoutes from "./routes/marks.routes.js";
 import examRoutes from "./routes/exam.routes.js";
 import hostelRoutes from "./routes/hostel.routes.js";
-import courseRoutes from "./routes/course.routes.js"
+import courseRoutes from "./routes/course.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import mongoConnectDB from "./config/db.js";
-import courseFeesRoutes from "./routes/coursefee.routes.js"
+import courseFeesRoutes from "./routes/coursefee.routes.js";
 
 const app = express();
 
-
 mongoConnectDB();
 
-
-
 // middlewares
-app.use(express.json({limit: "10mb"  }));
+app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Add request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
-  if (req.method !== 'GET') {
-    console.log('Request body keys:', Object.keys(req.body || {}));
+  if (req.method !== "GET") {
+    console.log("Request body keys:", Object.keys(req.body || {}));
     if (req.file) {
-      console.log('File upload detected:', {
+      console.log("File upload detected:", {
         fieldname: req.file.fieldname,
         originalname: req.file.originalname,
         mimetype: req.file.mimetype,
-        size: req.file.size
+        size: req.file.size,
       });
     }
   }
@@ -48,7 +45,11 @@ app.use((req, res, next) => {
 app.use(
   cors({
     // origin: process.env.CLIENT_URL || "http://localhost:3000",
-    origin:["https://bt3dvjjk-3000.inc1.devtunnels.ms", "http://localhost:3000",process.env.CLIENT_URL ],
+    origin: [
+      "https://bt3dvjjk-3000.inc1.devtunnels.ms",
+      "http://localhost:3000",
+      process.env.CLIENT_URL,
+    ],
     credentials: true,
   })
 );
@@ -62,7 +63,7 @@ app.get("/", (req, res) => {
       name: "Student Management System API",
       version: "1.0.0",
       environment: process.env.NODE_ENV || "development",
-      port: process.env.PORT || 4000
+      port: process.env.PORT || 4000,
     },
     endpoints: {
       auth: "/api/auth",
@@ -74,17 +75,18 @@ app.get("/", (req, res) => {
       hostel: "/api/hostel",
       course: "/api/course",
       payment: "/api/payment",
-      courseFees: "/api/course-fees"
+      courseFees: "/api/course-fees",
     },
     health: {
       uptime: process.uptime(),
       memory: {
         used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024) + " MB",
-        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + " MB"
+        total:
+          Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + " MB",
       },
       platform: process.platform,
-      nodeVersion: process.version
-    }
+      nodeVersion: process.version,
+    },
   };
 
   res.status(200).json(serverStatus);
@@ -97,13 +99,13 @@ app.get("/api/test/cloudinary", async (req, res) => {
     res.json({
       message: "Cloudinary test completed",
       status: isConnected,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     res.status(500).json({
       message: "Cloudinary test failed",
       error: error.message,
-      status: false
+      status: false,
     });
   }
 });
@@ -115,10 +117,9 @@ app.use("/api/academics", academicRoutes);
 app.use("/api/marks", marksRoutes);
 app.use("/api/exam", examRoutes);
 app.use("/api/hostel", hostelRoutes);
-app.use("/api/course", courseRoutes)
+app.use("/api/course", courseRoutes);
 app.use("/api/payment", paymentRoutes);
-app.use("/api/course-fees",courseFeesRoutes)
-
+app.use("/api/course-fees", courseFeesRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, "0.0.0.0", () => {
