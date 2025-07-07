@@ -46,9 +46,8 @@ app.use(
   cors({
     // origin: process.env.CLIENT_URL || "http://localhost:3000",
     origin: [
-      "https://bt3dvjjk-3000.inc1.devtunnels.ms",
-      "http://localhost:3000",
       process.env.CLIENT_URL,
+      "http://localhost:3000",
     ],
     credentials: true,
   })
