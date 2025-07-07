@@ -4,17 +4,17 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 dotenv.config();
 
-import authRoutes from "./routes/auth.routes.js";
-import studentRoutes from "./routes/student.routes.js";
-import teacherRoutes from "./routes/teacher.routes.js";
-import academicRoutes from "./routes/academic.routes.js";
-import marksRoutes from "./routes/marks.routes.js";
-import examRoutes from "./routes/exam.routes.js";
-import hostelRoutes from "./routes/hostel.routes.js";
-import courseRoutes from "./routes/course.routes.js";
-import paymentRoutes from "./routes/payment.routes.js";
-import mongoConnectDB from "./config/db.js";
-import courseFeesRoutes from "./routes/coursefee.routes.js";
+import authRoutes from "./src/routes/auth.routes.js";
+import studentRoutes from "./src/routes/student.routes.js";
+import teacherRoutes from "./src/routes/teacher.routes.js";
+import academicRoutes from "./src/routes/academic.routes.js";
+import marksRoutes from "./src/routes/marks.routes.js";
+import examRoutes from "./src/routes/exam.routes.js";
+import hostelRoutes from "./src/routes/hostel.routes.js";
+import courseRoutes from "./src/routes/course.routes.js";
+import paymentRoutes from "./src/routes/payment.routes.js";
+import mongoConnectDB from "./src/config/db.js";
+import courseFeesRoutes from "./src/routes/coursefee.routes.js";
 
 const app = express();
 
