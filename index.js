@@ -3,7 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 dotenv.config();
-
+import { testCloudinaryConnection } from "./src/utils/cloudinary.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import studentRoutes from "./src/routes/student.routes.js";
 import teacherRoutes from "./src/routes/teacher.routes.js";
