@@ -25,24 +25,35 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-app.use(
-  cors({
-    origin: [
-      process.env.CLIENT_URL,
-      "http://localhost:3000",
-      "https://student-management-system-frontend-self.vercel.app"
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    optionsSuccessStatus: 200,
-    preflightContinue: false
-  })
-);
+// Single, comprehensive CORS configuration
+app.use(cors({
+  origin: [
+    process.env.CLIENT_URL,
+    "http://localhost:3000",
+    "https://student-management-system-frontend-self.vercel.app"
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Cache-Control',
+    'X-File-Name'
+  ],
+  exposedHeaders: ['Set-Cookie'],
+  optionsSuccessStatus: 200,
+  preflightContinue: false
+}));
 
 // Add request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  console.log('Origin:', req.headers.origin);
+  console.log('Cookies:', req.headers.cookie ? 'Present' : 'None');
+  
   if (req.method !== "GET") {
     console.log("Request body keys:", Object.keys(req.body || {}));
     if (req.file) {
@@ -57,17 +68,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(
-  cors({
-    // origin: process.env.CLIENT_URL || "http://localhost:3000",
-    origin: [
-      process.env.CLIENT_URL,
-      "http://localhost:3000",
-    ],
-    credentials: true,
-  })
-);
-
+// Rest of your code remains the same...
 app.get("/", (req, res) => {
   const serverStatus = {
     message: "Server is running successfully! 🚀",

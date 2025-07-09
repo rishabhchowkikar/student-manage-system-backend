@@ -21,11 +21,15 @@ export const generateToken = (userId, role, res) => {
       throw new Error("Invalid role");
   }
 
+    const isProduction = process.env.NODE_ENV === "production";
+  const isHTTPS = process.env.CLIENT_URL?.startsWith("https://");
+
   res.cookie(cookieName, token, {
     maxAge: 1 * 24 * 60 * 60 * 1000, // 1 day
     httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV !== "development",
+    sameSite: isProduction || isHTTPS ? "none" : "strict",
+    secure: isProduction || isHTTPS,
+    domain: isProduction ? undefined : undefined, // Let browser handle domain
   });
 
   return token;
