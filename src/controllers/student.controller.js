@@ -1,6 +1,31 @@
 import Auth from "../models/Auth.model.js";
 import cloudinary from "../utils/cloudinary.js";
 
+const checkIfFirstTimeUser = (userData) => {
+  const requiredFields = [
+    'phone',
+    'address', 
+    'dob',
+    'gender',
+    'category',
+    'nationality',
+    'bloodGroup',
+    'aadharNumber',
+    'fatherName',
+    'motherName'
+  ];
+
+  const emptyFields = requiredFields.filter(field => {
+    const value = userData[field];
+    return !value || value === '';
+  });
+
+  console.log('Backend - Empty fields count:', emptyFields.length, 'Empty fields:', emptyFields);
+  return emptyFields.length >= 5;
+};
+
+
+
 export const getProfile = async (req, res) => {
   try {
     const user = await Auth.findById(req.user._id)
@@ -30,7 +55,6 @@ export const getProfile = async (req, res) => {
 
 export const updatePersonalDetailsController = async (req, res) => {
   try {
-    // PEHLE CHECK KARO KI USER KO PERMISSION HAI YA NAHI
     const user = await Auth.findById(req.user._id);
     
     if (!user) {
@@ -40,8 +64,14 @@ export const updatePersonalDetailsController = async (req, res) => {
       });
     }
 
-    // Permission check - YE NAYA LOGIC HAI
-    if (user.updatePermissionStatus !== "approved") {
+    // UPDATED PERMISSION CHECK - Handle first-time users
+    const isFirstTimeUser = checkIfFirstTimeUser(user);
+    
+    console.log('Is first time user (backend):', isFirstTimeUser);
+    console.log('User permission status:', user.updatePermissionStatus);
+    
+    // Only check permission for existing users (not first-time users)
+    if (!isFirstTimeUser && user.updatePermissionStatus !== "approved") {
       return res.status(403).json({
         message: "Admin permission required to update profile",
         status: false,
@@ -50,7 +80,7 @@ export const updatePersonalDetailsController = async (req, res) => {
       });
     }
 
-    // BAAKI EXISTING CODE SAME RAHEGA - photo upload, etc.
+    // REST OF YOUR EXISTING CODE REMAINS THE SAME...
     let photoUrl = req.body.photo;
     
     // Handle file upload from form-data (multer)
@@ -123,12 +153,14 @@ export const updatePersonalDetailsController = async (req, res) => {
       fatherName: req.body.fatherName,
       motherName: req.body.motherName,
       want_to_apply_for_hostel: req.body.want_to_apply_for_hostel,
-      
-      // UPDATE PERMISSION STATUS RESET KARO SUCCESSFUL UPDATE KE BAAD
-      updatePermissionStatus: "none", // Reset after successful update
-      updatePermissionApprovedDate: null,
-      adminComments: null
     };
+
+    // UPDATED - Only reset permission status for existing users
+    if (!isFirstTimeUser) {
+      updateFields.updatePermissionStatus = "none";
+      updateFields.updatePermissionApprovedDate = null;
+      updateFields.adminComments = null;
+    }
 
     const filteredUpdates = Object.fromEntries(
       Object.entries(updateFields).filter(([key, value]) => {
@@ -150,7 +182,7 @@ export const updatePersonalDetailsController = async (req, res) => {
     }
 
     res.status(200).json({
-      message: "Personal details updated successfully",
+      message: isFirstTimeUser ? "Profile completed successfully" : "Personal details updated successfully",
       status: true,
       data: { ...updatedStudentDetails.toObject(), role: req.user.role },
     });

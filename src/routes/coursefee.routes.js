@@ -1,42 +1,130 @@
+// routes/courseFee.routes.js
 import express from "express";
 import {
-  getFeeStructure,
-  getStudentFeeStatus,
-  createCourseFeesOrder,
-  verifyCourseFeesPayment,
+  // Student Controllers
+  getStudentFeeStructure,
+  createFeePaymentOrder,
+  verifyFeePayment,
+  getPaymentHistory,
+  getDueFees,
   getPendingFees,
-  getFeePaymentHistory,
-  getAllFeeRecords,
+  
+  // Admin Controllers
   createFeeStructure,
-  getAllFeeStructures,
   updateFeeStructure,
-  generateYearwiseFeeRecords
+  getAllFeeStructures,
+  getAllFeeRecords
 } from "../controllers/courseFee.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import roleMiddleware from "../middlewares/role.middleware.js";
 
 const router = express.Router();
 
-// Student routes
+// ===============================
+// STUDENT ROUTES
+// ===============================
+
+// Get complete fee structure for student (main endpoint)
 router.get(
-  "/structure",
-  roleMiddleware(["student", "admin"]),
+  "/student/fee-structure",
+  roleMiddleware(["student"]),
   authMiddleware,
-  getFeeStructure
+  getStudentFeeStructure
 );
 
+// Create payment order for current academic year
+router.post(
+  "/student/create-payment-order",
+  roleMiddleware(["student"]),
+  authMiddleware,
+  createFeePaymentOrder
+);
+
+// Verify payment after successful transaction
+router.post(
+  "/student/verify-payment",
+  roleMiddleware(["student"]),
+  authMiddleware,
+  verifyFeePayment
+);
+
+// Get complete payment history (paid, due, pending)
+router.get(
+  "/student/payment-history",
+  roleMiddleware(["student"]),
+  authMiddleware,
+  getPaymentHistory
+);
+
+// Get only due fees with penalties
+router.get(
+  "/student/due-fees",
+  roleMiddleware(["student"]),
+  authMiddleware,
+  getDueFees
+);
+
+// Get only pending fees (payment initiated but not completed)
+router.get(
+  "/student/pending-fees",
+  roleMiddleware(["student"]),
+  authMiddleware,
+  getPendingFees
+);
+
+// ===============================
+// ADMIN ROUTES
+// ===============================
+
+// Create new fee structure
+router.post(
+  "/admin/fee-structure",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  createFeeStructure
+);
+
+// Update existing fee structure
+router.put(
+  "/admin/fee-structure/:structureId",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  updateFeeStructure
+);
+
+// Get all fee structures with pagination and filters
+router.get(
+  "/admin/fee-structures",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  getAllFeeStructures
+);
+
+// Get all fee records with pagination and filters
+router.get(
+  "/admin/fee-records",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  getAllFeeRecords
+);
+
+// ===============================
+// BACKWARD COMPATIBILITY ROUTES
+// ===============================
+
+// Legacy routes for existing frontend (if needed)
 router.get(
   "/yearwise-structure",
   roleMiddleware(["student"]),
   authMiddleware,
-  generateYearwiseFeeRecords
+  getStudentFeeStructure
 );
 
 router.get(
-  "/status",
-  roleMiddleware(["student", "admin"]),
+  "/history",
+  roleMiddleware(["student"]),
   authMiddleware,
-  getStudentFeeStatus
+  getPaymentHistory
 );
 
 router.get(
@@ -46,33 +134,25 @@ router.get(
   getPendingFees
 );
 
-router.get(
-  "/history",
-  roleMiddleware(["student"]),
-  authMiddleware,
-  getFeePaymentHistory
-);
-
 router.post(
   "/create-order",
   roleMiddleware(["student"]),
   authMiddleware,
-  createCourseFeesOrder
+  createFeePaymentOrder
 );
 
 router.post(
   "/verify-payment",
   roleMiddleware(["student"]),
   authMiddleware,
-  verifyCourseFeesPayment
+  verifyFeePayment
 );
 
-// Admin routes
 router.get(
-  "/all",
+  "/admin/structures",
   roleMiddleware(["admin"]),
   authMiddleware,
-  getAllFeeRecords
+  getAllFeeStructures
 );
 
 router.post(
@@ -90,10 +170,10 @@ router.put(
 );
 
 router.get(
-  "/admin/structures",
+  "/all",
   roleMiddleware(["admin"]),
   authMiddleware,
-  getAllFeeStructures
+  getAllFeeRecords
 );
 
 export default router;

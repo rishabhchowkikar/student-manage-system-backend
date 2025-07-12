@@ -68,8 +68,53 @@ import crypto from 'crypto';
 // In payment.controller.js
 export const createPaymentOrder = async (req, res) => {
   try {
+    console.log("=== DEBUGGING PAYMENT AMOUNT ISSUE ===");
+    console.log("Raw request body:", JSON.stringify(req.body, null, 2));
+    console.log("Request headers:", req.headers);
+    
     const { amount, roomType } = req.body;
     const userId = req.user._id;
+
+    // Log the extracted values
+    console.log("Extracted amount:", amount, "Type:", typeof amount);
+    console.log("Extracted roomType:", roomType, "Type:", typeof roomType);
+    console.log("User ID:", userId);
+
+    // Validate the amount more strictly
+    const numericAmount = Number(amount);
+    console.log("Converted numeric amount:", numericAmount);
+
+    if (!numericAmount || numericAmount < 1000) {
+      console.log("VALIDATION FAILED - Invalid amount:", numericAmount);
+      return res.status(400).json({
+        message: `Invalid amount received: ${amount}. Expected 8000 or 12000.`,
+        status: false,
+        debug: {
+          receivedAmount: amount,
+          convertedAmount: numericAmount,
+          roomType: roomType
+        }
+      });
+    }
+
+    // Validate room type and expected amounts
+    const expectedAmounts = { Normal: 8000, AC: 12000 };
+    if (!expectedAmounts[roomType]) {
+      return res.status(400).json({
+        message: `Invalid room type: ${roomType}`,
+        status: false
+      });
+    }
+
+    if (numericAmount !== expectedAmounts[roomType]) {
+      console.log("AMOUNT MISMATCH:");
+      console.log("Expected:", expectedAmounts[roomType]);
+      console.log("Received:", numericAmount);
+      return res.status(400).json({
+        message: `Amount mismatch. Expected ₹${expectedAmounts[roomType]} for ${roomType} room, but received ₹${numericAmount}`,
+        status: false
+      });
+    }
 
     // Helper function to get current academic year
     function getCurrentAcademicYear() {
@@ -84,71 +129,76 @@ export const createPaymentOrder = async (req, res) => {
       }
     }
 
-    console.log("=== CREATE PAYMENT ORDER START ===");
-    console.log("Request body:", { amount, roomType });
-    console.log("User:", userId);
-
-    // Validate required fields
-    if (!amount || !roomType) {
-      return res.status(400).json({
-        message: "Amount and room type are required",
-        status: false
-      });
-    }
-
     // Generate receipt ID
     const receiptId = `h_${userId.toString().slice(-8)}_${Date.now().toString().slice(-8)}`;
-    console.log("Generated receipt:", receiptId, "Length:", receiptId.length);
+    console.log("Generated receipt:", receiptId);
 
-    // Create Razorpay order
+    // Create Razorpay order with validated amount
+    const razorpayAmount = numericAmount * 100; // Convert to paise
     const options = {
-      amount: amount * 100, // Convert to paise
+      amount: razorpayAmount,
       currency: 'INR',
       receipt: receiptId,
       notes: {
         userId: userId.toString(),
         roomType,
-        purpose: 'hostel_fees'
+        purpose: 'hostel_fees',
+        originalAmount: numericAmount
       }
     };
 
-    console.log("Creating Razorpay order with options:", options);
+    console.log("Razorpay order options:", JSON.stringify(options, null, 2));
+    
     const order = await razorpay.orders.create(options);
-    console.log("Razorpay order created:", order);
+    console.log("Razorpay order created successfully:", JSON.stringify(order, null, 2));
 
     // Get current academic year
     const currentAcademicYear = getCurrentAcademicYear();
 
-    // Create hostel record with academicYear
+    // Create hostel record with validated data
     const hostelData = {
       userId,
       roomType,
-      roomNumber: "TBD", // To be assigned by admin
-      floor: "TBD", // To be assigned by admin
-      hostelName: "TBD", // To be assigned by admin
+      roomNumber: "TBD",
+      floor: "TBD", 
+      hostelName: "TBD",
       allocated: false,
-      academicYear: currentAcademicYear, // Add this required field
+      academicYear: currentAcademicYear,
       paymentStatus: 'pending',
-      paymentAmount: amount,
+      paymentAmount: numericAmount, // Use validated numeric amount
       razorpayOrderId: order.id,
     };
 
-    console.log("Creating hostel record with data:", hostelData);
+    console.log("Creating hostel record with data:", JSON.stringify(hostelData, null, 2));
 
     const hostel = new Hostel(hostelData);
     await hostel.save();
 
+    console.log("Hostel record saved successfully");
+
+    // Verify the saved data
+    const savedHostel = await Hostel.findById(hostel._id);
+    console.log("Verification - Saved hostel data:", JSON.stringify(savedHostel, null, 2));
+
     res.status(200).json({
       orderId: order.id,
-      amount: order.amount,
+      amount: order.amount, // This should be numericAmount * 100
       currency: order.currency,
       receipt: order.receipt,
       status: true,
-      message: "Payment order created successfully"
+      message: "Payment order created successfully",
+      debug: {
+        originalAmount: numericAmount,
+        razorpayAmount: razorpayAmount,
+        savedAmount: savedHostel.paymentAmount
+      }
     });
 
   } catch (error) {
-    console.error("Create payment order error:", error);
+    console.error("=== CREATE PAYMENT ORDER ERROR ===");
+    console.error("Error details:", error);
+    console.error("Stack trace:", error.stack);
+    
     res.status(500).json({
       message: "Failed to create payment order",
       status: false,
@@ -156,7 +206,6 @@ export const createPaymentOrder = async (req, res) => {
     });
   }
 };
-
 
 // In payment.controller.js
 export const verifyPayment = async (req, res) => {

@@ -78,6 +78,7 @@ const courseFeesSchema = new mongoose.Schema({
   receiptNumber: {
     type: String,
     unique: true,
+    sparse: true
   },
   adminRemarks: {
     type: String,
