@@ -32,6 +32,7 @@ app.use(cors({
     process.env.CLIENT_URL,
     "http://localhost:3000",
     "http://localhost:3001",
+    "https://admin-std-portal.vercel.app",
     "https://student-management-system-frontend-self.vercel.app"
   ],
   credentials: true,
