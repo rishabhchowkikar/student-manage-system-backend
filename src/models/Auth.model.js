@@ -50,6 +50,17 @@ const StudentPersonalDetailSchema = new mongoose.Schema(
     updatePermissionApprovedDate: { type: Date },
     updatePermissionRejectedDate: { type: Date },
     adminComments: { type: String },
+
+    updatePermissionReason: { type: String }, // General reason
+    requestedChanges: {
+      type: Map,
+      of: {
+        currentValue: { type: mongoose.Schema.Types.Mixed },
+        newValue: { type: mongoose.Schema.Types.Mixed },
+        reason: { type: String }
+      }
+    }, // Specific field changes requested
+    changesSummary: { type: String } // Human-readable summary of changes
   },
   {
     timestamps: true,
