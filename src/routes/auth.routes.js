@@ -19,7 +19,11 @@ import {
 import {
   updatePersonalDetailsController,
   getUpdatePermissionStatus,
-  requestUpdatePermission
+  requestUpdatePermission,
+  rejectUpdatePermission,
+  approveUpdatePermission,
+  getAllUpdateRequests,
+  getPendingUpdateRequests
 } from "../controllers/student.controller.js";
 
 import authMiddleware from "../middlewares/auth.middleware.js"
@@ -100,8 +104,8 @@ router.put(
   "/update-personal-details",
   roleMiddleware(["student"]),
   authMiddleware,
-  upload.single('photo'), // Single image upload
-  handleMulterError, // Handle multer errors
+  upload.single('photo'), 
+  handleMulterError,
   updatePersonalDetailsController
 );
 
@@ -123,5 +127,33 @@ router.get("/update-permission-status",
   authMiddleware,
   getUpdatePermissionStatus
 )
+
+router.get(
+  "/pending-update-requests",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  getPendingUpdateRequests
+);
+
+router.get(
+  "/all-update-requests",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  getAllUpdateRequests
+);
+
+router.put(
+  "/approve-update-permission/:studentId",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  approveUpdatePermission
+);
+
+router.put(
+  "/reject-update-permission/:studentId",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  rejectUpdatePermission
+);
 
 export default router;

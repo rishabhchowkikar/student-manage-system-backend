@@ -15,6 +15,7 @@ import courseRoutes from "./src/routes/course.routes.js";
 import paymentRoutes from "./src/routes/payment.routes.js";
 import mongoConnectDB from "./src/config/db.js";
 import courseFeesRoutes from "./src/routes/coursefee.routes.js";
+import dashboardRoutes from "./src/routes/dashboard.routes.js"
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(cors({
   origin: [
     process.env.CLIENT_URL,
     "http://localhost:3000",
+    "http://localhost:3001",
     "https://student-management-system-frontend-self.vercel.app"
   ],
   credentials: true,
@@ -135,6 +137,7 @@ app.use("/api/hostel", hostelRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/course-fees", courseFeesRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, "0.0.0.0", () => {

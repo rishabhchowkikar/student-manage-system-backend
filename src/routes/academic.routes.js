@@ -5,6 +5,7 @@ import {
   getTeachers,
   createTimeTable,
   getTimeTable,
+  getAllStudents
 } from "../controllers/academic.controller.js";
 
 import authMiddleware from "../middlewares/auth.middleware.js";
@@ -46,6 +47,13 @@ router.get(
   authMiddleware,
   getTimeTable
 );
+
+router.get(
+  "/getallstudents",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  getAllStudents
+)
 
 
 export default router;
