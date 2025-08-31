@@ -5,7 +5,12 @@ import {
   getTeachers,
   createTimeTable,
   getTimeTable,
-  getAllStudents
+  getAllStudents,
+  deleteTimeTable,
+  getAllTimeTables,
+  getTimeTableById,
+  updateTimeTable,
+  getTimeTablesByCourseId
 } from "../controllers/academic.controller.js";
 
 import authMiddleware from "../middlewares/auth.middleware.js";
@@ -40,6 +45,42 @@ router.post(
   authMiddleware,
   createTimeTable
 );
+
+// NEW - Update existing timetable (PUT request)
+router.put(
+  "/timetable/:id",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  updateTimeTable
+);
+
+// NEW - Get all timetables (for admin dashboard)
+router.get(
+  "/timetables",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  getAllTimeTables
+);
+
+// NEW - Get specific timetable by ID (for editing)
+router.get(
+  "/timetable/:id",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  getTimeTableById
+);
+
+// NEW - Delete timetable
+router.delete(
+  "/timetable/:id",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  deleteTimeTable
+);
+
+// Route to get timetables by specific courseId
+router.get('/timetable/course/:courseId', getTimeTablesByCourseId);
+
 
 router.get(
   "/timetable",

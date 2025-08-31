@@ -23,7 +23,8 @@ import {
   rejectUpdatePermission,
   approveUpdatePermission,
   getAllUpdateRequests,
-  getPendingUpdateRequests
+  getPendingUpdateRequests,
+  getStudentDetailAdmin
 } from "../controllers/student.controller.js";
 
 import authMiddleware from "../middlewares/auth.middleware.js"
@@ -155,5 +156,14 @@ router.put(
   authMiddleware,
   rejectUpdatePermission
 );
+
+router.get(
+  "/get-student-detail-admin/:studentId",
+  roleMiddleware(["admin"]),
+  authMiddleware,
+  getStudentDetailAdmin
+);
+
+
 
 export default router;

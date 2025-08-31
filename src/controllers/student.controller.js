@@ -565,3 +565,89 @@ export const getAllUpdateRequests = async (req, res) => {
     });
   }
 };
+
+export const getStudentDetailAdmin = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+
+    // Validate studentId format
+    if (!studentId || !studentId.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({
+        message: "Invalid student ID format",
+        status: false,
+      });
+    }
+
+    // Find student by ID and populate course information
+    const student = await Auth.findById(studentId)
+      .populate({
+        path: "courseId",
+        select: "name code department school duration totalSemesters isActive",
+      })
+      .select("-password") // Exclude password field
+      .lean(); // Convert to plain JavaScript object for better performance
+
+    if (!student) {
+      return res.status(404).json({
+        message: "Student not found",
+        status: false,
+      });
+    }
+
+    // Add additional computed information
+    const studentDetails = {
+      ...student,
+      // Add computed fields
+      profileCompletionStatus: checkIfFirstTimeUser(student) ? "incomplete" : "complete",
+      accountAge: student.createdAt ? Math.floor((Date.now() - new Date(student.createdAt).getTime()) / (1000 * 60 * 60 * 24)) : 0, // Days since account creation
+      lastUpdated: student.updatedAt || student.createdAt,
+      
+      // Permission status details
+      permissionDetails: {
+        status: student.updatePermissionStatus || "none",
+        canUpdate: student.updatePermissionStatus === "approved" || checkIfFirstTimeUser(student),
+        requestDate: student.updatePermissionRequestDate,
+        approvedDate: student.updatePermissionApprovedDate,
+        rejectedDate: student.updatePermissionRejectedDate,
+        adminComments: student.adminComments,
+        changesSummary: student.changesSummary,
+        requestReason: student.updatePermissionReason
+      },
+
+      // Personal information status
+      personalInfo: {
+        hasPhoto: !!student.photo,
+        hasPhone: !!student.phone,
+        hasAddress: !!student.address,
+        hasDOB: !!student.dob,
+        hasEmergencyContact: !!student.altPhone,
+        hasCompleteParentInfo: !!(student.fatherName && student.motherName)
+      },
+
+      // Academic information
+      academicInfo: {
+        courseName: student.courseId?.name || "Not assigned",
+        courseCode: student.courseId?.code || "N/A",
+        department: student.courseId?.department || "N/A",
+        school: student.courseId?.school || "N/A",
+        courseDuration: student.courseId?.duration || 0,
+        totalSemesters: student.courseId?.totalSemesters || 0,
+        // assignedTeachers: student.courseId?.assignedTeachers || []
+      }
+    };
+
+    res.status(200).json({
+      message: "Student details fetched successfully",
+      status: true,
+      data: studentDetails
+    });
+
+  } catch (error) {
+    console.error("Error fetching student details:", error.message);
+    res.status(500).json({
+      message: "Internal Server Error",
+      status: false,
+      error: error.message
+    });
+  }
+};

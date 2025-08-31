@@ -46,6 +46,163 @@ export const getTeachers = async (req, res) => {
   }
 };
 
+// new controllers
+// NEW - Update existing timetable function
+export const updateTimeTable = async (req, res) => {
+  try {
+    const { id } = req.params; // Get timetable ID from URL parameters
+    const { courseId, semester, schedule } = req.body;
+
+    // Validate if timetable exists
+    const existingTimeTable = await TimeTable.findById(id);
+    if (!existingTimeTable) {
+      return res.status(404).json({
+        message: "TimeTable not found",
+        status: false
+      });
+    }
+
+    // Update the timetable with new data
+    const updatedTimeTable = await TimeTable.findByIdAndUpdate(
+      id,
+      {
+        courseId: courseId || existingTimeTable.courseId,
+        semester: semester || existingTimeTable.semester,
+        schedule: schedule || existingTimeTable.schedule,
+        updatedAt: new Date() // Track when it was last updated
+      },
+      { 
+        new: true, // Return the updated document
+        runValidators: true // Run schema validations
+      }
+    ).populate({
+      path: "schedule.periods.subjectId",
+      populate: {
+        path: "teacherId",
+        select: "name email department",
+        model: "Teacher"
+      }
+    });
+
+    res.status(200).json({
+      data: updatedTimeTable,
+      status: true,
+      message: "TimeTable updated successfully"
+    });
+
+  } catch (error) {
+    console.error(`Error in updateTimeTable: ${error.message}`);
+    res.status(500).json({ 
+      message: "Server error while updating timetable", 
+      status: false 
+    });
+  }
+};
+
+
+// NEW - Get timetable by ID (useful for admin to edit specific timetables)
+export const getTimeTableById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const timeTable = await TimeTable.findById(id).populate({
+      path: "schedule.periods.subjectId",
+      populate: {
+        path: "teacherId",
+        select: "name email department",
+        model: "Teacher"
+      }
+    });
+
+    if (!timeTable) {
+      return res.status(404).json({
+        message: "TimeTable not found",
+        status: false
+      });
+    }
+
+    res.status(200).json({
+      data: timeTable,
+      status: true,
+      message: "TimeTable fetched successfully"
+    });
+
+  } catch (error) {
+    console.error(`Error in getTimeTableById: ${error.message}`);
+    res.status(500).json({
+      message: "Server error while fetching timetable",
+      status: false
+    });
+  }
+};
+
+// NEW - Get all timetables (for admin to see all timetables)
+export const getAllTimeTables = async (req, res) => {
+  try {
+    const timeTables = await TimeTable.find({})
+      .populate("courseId", "name code department")
+      .populate({
+        path: "schedule.periods.subjectId",
+        populate: {
+          path: "teacherId",
+          select: "name email department",
+          model: "Teacher"
+        }
+      })
+      .sort({ createdAt: -1 });
+
+    if (!timeTables || timeTables.length === 0) {
+      return res.status(404).json({
+        message: "No timetables found",
+        status: false
+      });
+    }
+
+    res.status(200).json({
+      data: timeTables,
+      status: true,
+      count: timeTables.length,
+      message: "TimeTables fetched successfully"
+    });
+
+  } catch (error) {
+    console.error(`Error in getAllTimeTables: ${error.message}`);
+    res.status(500).json({
+      message: "Server error while fetching timetables",
+      status: false
+    });
+  }
+};
+
+// NEW - Delete timetable function
+export const deleteTimeTable = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedTimeTable = await TimeTable.findByIdAndDelete(id);
+
+    if (!deletedTimeTable) {
+      return res.status(404).json({
+        message: "TimeTable not found",
+        status: false
+      });
+    }
+
+    res.status(200).json({
+      message: "TimeTable deleted successfully",
+      status: true,
+      data: deletedTimeTable
+    });
+
+  } catch (error) {
+    console.error(`Error in deleteTimeTable: ${error.message}`);
+    res.status(500).json({
+      message: "Server error while deleting timetable",
+      status: false
+    });
+  }
+};
+
 export const createTimeTable = async (req, res) => {
   try {
     const { courseId, semester, schedule } = req.body;
@@ -106,6 +263,68 @@ export const getAllStudents = async (req, res) => {
     res.status(500).json({ 
       message: "Server error while fetching students", 
       status: false 
+    });
+  }
+};
+
+// Get timetables by courseId (all semesters for a specific course)
+export const getTimeTablesByCourseId = async (req, res) => {
+  try {
+    const { courseId } = req.params; // Get courseId from URL parameters
+    
+    // Validate if courseId is provided
+    if (!courseId) {
+      return res.status(400).json({
+        message: "Course ID is required",
+        status: false
+      });
+    }
+
+    // Find all timetables for the specific courseId
+    const timeTables = await TimeTable.find({ courseId })
+      .populate("courseId", "name code department")
+      .populate({
+        path: "schedule.periods.subjectId",
+        populate: {
+          path: "teacherId",
+          select: "name email department",
+          model: "Teacher"
+        }
+      })
+      .sort({ semester: 1 }); // Sort by semester in ascending order
+
+    // Check if any timetables exist for this course
+    if (!timeTables || timeTables.length === 0) {
+      return res.status(404).json({
+        message: "No timetables found for this course",
+        status: false
+      });
+    }
+
+    // Group timetables by semester for better organization
+    const timetablesBySemester = timeTables.reduce((acc, timetable) => {
+      const semester = timetable.semester;
+      if (!acc[semester]) {
+        acc[semester] = [];
+      }
+      acc[semester].push(timetable);
+      return acc;
+    }, {});
+
+    res.status(200).json({
+      data: timeTables,
+      timetablesBySemester, // Additional grouped data
+      status: true,
+      count: timeTables.length,
+      courseId: courseId,
+      message: "Timetables fetched successfully for the course"
+    });
+
+  } catch (error) {
+    console.error(`Error in getTimeTablesByCourseId: ${error.message}`);
+    res.status(500).json({
+      message: "Server error while fetching timetables by course",
+      status: false
     });
   }
 };
