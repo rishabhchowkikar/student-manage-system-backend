@@ -17,13 +17,20 @@ const teacherSchema = new mongoose.Schema(
     department: { type: String, required: true }, // e.g., "Computer Science"
     role: {
       type: String,
-      enum: ["Professor", "Assistant Professor"],
+      enum: ["Professor", "Assistant Professor","Associate Professor","Head Of Department"],
       required: true,
+    },
+     courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      default: null // Will be null until admin assigns
     },
     phone: { type: String, trim: true, minlength: 10 },
   },
   { timestamps: true }
 );
+
+
 
 const Teacher = mongoose.model("Teacher", teacherSchema);
 export default Teacher;

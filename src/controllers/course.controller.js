@@ -118,7 +118,7 @@ export const getCourseDetails = async (req, res) => {
           return res.status(400).json({ message: "Invalid courseId format", status: false });
         }
         const course = await Course.findById(courseId)
-          .populate("assignedTeachers", "name email phone")
+          .populate("assignedTeachers", "name email phone role")
           .populate("createdBy", "name email phone");
         if (!course) {
           return res.status(404).json({ message: "Course not found", status: false });
@@ -126,7 +126,7 @@ export const getCourseDetails = async (req, res) => {
         return res.status(200).json({ data: course, status: true });
       } else {
         const courses = await Course.find({})
-          .populate("assignedTeachers", "name email phone")
+          .populate("assignedTeachers", "name email phone role")
           .populate("createdBy", "name email phone");
         return res.status(200).json({ data: courses, status: true });
       }

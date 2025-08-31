@@ -6,13 +6,24 @@ const hostelSchema = new mongoose.Schema({
     ref: "StudentPersonalDetail",
     required: true,
   },
+
+   buildingId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Building" 
+  },
+  roomId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Room" 
+  },
+
+
   roomType: { type: String, enum: ["Normal", "AC"], required: true },
   roomNumber: { type: String, required: true },
   floor: { type: String, required: true },
   hostelName: { type: String, required: true },
   allocated: { type: Boolean, default: false },
   
-
+ allocationDate: { type: Date },
   academicYear: { 
     type: String, 
     required: true,
@@ -38,6 +49,7 @@ const hostelSchema = new mongoose.Schema({
 
 // Add compound index for efficient queries
 hostelSchema.index({ userId: 1, academicYear: 1 });
+hostelSchema.index({ buildingId: 1, roomId: 1, academicYear: 1 });
 
 const Hostel = mongoose.model("Hostel", hostelSchema);
 export default Hostel;
