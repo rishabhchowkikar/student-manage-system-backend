@@ -5,12 +5,10 @@ import roleMiddleware from "../middlewares/role.middleware.js";
 
 const router = express.Router();
 
-router.get(
-  "/profile",
-  roleMiddleware(["teacher"]),
-  authMiddleware,
-  getProfile
-);
+router.get('/profile', roleMiddleware(['teacher']), authMiddleware, getProfile);
+
+
+router.get('/profile/:id', roleMiddleware(['admin']), authMiddleware, getProfile);
 
 router.get(
   "/timetable",

@@ -36,6 +36,70 @@ export const getSubjects = async (req, res) => {
   }
 };
 
+// new controller function subjects by courseId
+export const getSubjectsByCourseId = async (req, res) => {
+  try {
+    const { courseId } = req.params; // Get courseId from URL parameters
+    
+    // Validate if courseId is provided
+    if (!courseId) {
+      return res.status(400).json({
+        message: "Course ID is required",
+        status: false
+      });
+    }
+
+    // Find all subjects for the specific courseId with teacher information
+    const subjects = await Subject.find({ courseId })
+      .populate("teacherId", "name email department role")
+      .populate("courseId", "name code department")
+      .sort({ semester: 1, name: 1 }); // Sort by semester, then by subject name
+
+    // Check if any subjects exist for this course
+    if (!subjects || subjects.length === 0) {
+      return res.status(404).json({
+        message: "No subjects found for this course",
+        status: false
+      });
+    }
+
+    // Group subjects by semester for better organization
+    const subjectsBySemester = subjects.reduce((acc, subject) => {
+      const semester = subject.semester || 'Unassigned';
+      if (!acc[semester]) {
+        acc[semester] = [];
+      }
+      acc[semester].push(subject);
+      return acc;
+    }, {});
+
+    // Calculate statistics
+    const stats = {
+      totalSubjects: subjects.length,
+      totalSemesters: Object.keys(subjectsBySemester).filter(sem => sem !== 'Unassigned').length,
+      assignedTeachers: [...new Set(subjects.map(s => s.teacherId?._id?.toString()).filter(Boolean))].length
+    };
+
+    res.status(200).json({
+      data: subjects,
+      subjectsBySemester, // Additional grouped data
+      stats, // Subject statistics
+      status: true,
+      count: subjects.length,
+      courseId: courseId,
+      message: "Subjects fetched successfully for the course"
+    });
+
+  } catch (error) {
+    console.error(`Error in getSubjectsByCourseId: ${error.message}`);
+    res.status(500).json({
+      message: "Server error while fetching subjects by course",
+      status: false,
+      error: error.message
+    });
+  }
+};
+
 export const getTeachers = async (req, res) => {
   try {
     const teachers = await Teacher.find().select("name email department role");
@@ -43,6 +107,58 @@ export const getTeachers = async (req, res) => {
   } catch (error) {
     console.error(`Error in getTeachers: ${error.message}`);
     res.status(500).json({ message: "Server error", status: false });
+  }
+};
+
+// updated teacher data controller function for specific subject
+export const updateSubjectTeacher = async (req, res) => {
+  try {
+    const { id } = req.params; // Get subject ID from URL parameters
+    const { teacherId } = req.body;
+
+    // Validate if subject exists
+    const existingSubject = await Subject.findById(id);
+    if (!existingSubject) {
+      return res.status(404).json({
+        message: "Subject not found",
+        status: false
+      });
+    }
+
+    // Validate if the new teacher exists
+    const teacher = await Teacher.findById(teacherId);
+    if (!teacher) {
+      return res.status(400).json({ 
+        message: "Invalid teacher ID - Teacher not found", 
+        status: false 
+      });
+    }
+
+    // Update the subject with new teacher
+    const updatedSubject = await Subject.findByIdAndUpdate(
+      id,
+      {
+        teacherId: teacherId,
+        updatedAt: new Date() // Track when it was last updated
+      },
+      { 
+        new: true, // Return the updated document
+        runValidators: true // Run schema validations
+      }
+    ).populate("teacherId", "name email department role");
+
+    res.status(200).json({
+      data: updatedSubject,
+      status: true,
+      message: `Teacher updated successfully for subject: ${updatedSubject.name}`
+    });
+
+  } catch (error) {
+    console.error(`Error in updateSubjectTeacher: ${error.message}`);
+    res.status(500).json({ 
+      message: "Server error while updating subject teacher", 
+      status: false 
+    });
   }
 };
 

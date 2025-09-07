@@ -17,6 +17,7 @@ import mongoConnectDB from "./src/config/db.js";
 import courseFeesRoutes from "./src/routes/coursefee.routes.js";
 import dashboardRoutes from "./src/routes/dashboard.routes.js"
 import hostelBuildingRoutes from "./src/routes/hostelBuilding.routes.js"
+import financeRoutes from "./src/routes/finance.routes.js"
 
 const app = express();
 
@@ -97,6 +98,7 @@ app.get("/", (req, res) => {
       courseFees: "/api/course-fees",
       dashboard: "/api/dashboard",
       hostelBuilding: "/api/hostel-building",
+      finance: "/api/finance"
     },
     health: {
       uptime: process.uptime(),
@@ -143,6 +145,7 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/course-fees", courseFeesRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/hostel-building", hostelBuildingRoutes);
+app.use("/api/finance", financeRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, "0.0.0.0", () => {
