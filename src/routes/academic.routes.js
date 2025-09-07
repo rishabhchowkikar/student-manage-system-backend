@@ -10,7 +10,9 @@ import {
   getAllTimeTables,
   getTimeTableById,
   updateTimeTable,
-  getTimeTablesByCourseId
+  getTimeTablesByCourseId,
+  updateSubjectTeacher,
+  getSubjectsByCourseId
 } from "../controllers/academic.controller.js";
 
 import authMiddleware from "../middlewares/auth.middleware.js";
@@ -31,6 +33,15 @@ router.get(
   authMiddleware,
   getSubjects
 );
+
+router.get(
+  "/courses/:courseId/subjects",
+  roleMiddleware(["admin", "teacher"]),
+  authMiddleware,
+  getSubjectsByCourseId
+);
+
+router.put("/subject/:id", roleMiddleware(["admin"]), authMiddleware, updateSubjectTeacher);
 
 router.get(
   "/teachers",

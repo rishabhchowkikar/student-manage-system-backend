@@ -128,7 +128,7 @@ export const getCourseDetails = async (req, res) => {
         const courses = await Course.find({})
           .populate("assignedTeachers", "name email phone role")
           .populate("createdBy", "name email phone");
-        return res.status(200).json({ data: courses, status: true });
+        return res.status(200).json({ data: courses, status: true, message:"hello world" });
       }
     } else if (req.user.role === "student") {
       // Students get their enrolled course from req.user.courseId
