@@ -10,20 +10,22 @@ import {
   getAllBusPassPayments,
   updateBusPassPaymentStatus,
   getBusPassPaymentDetails,
-  
-  // Student payment history
-  getStudentPaymentHistory,
-  getStudentAllPayments,
+
+
+  // student fees payment history controllers
+  getAllStudentsCourseFees,
+  getStudentCourseFees,
   
   // Finance summary and reports
-  getPaymentSummary,
-  getMonthlyPaymentReport,
+  getDashboardSummary,
+  getYearlyReport,
   getPaymentAnalytics,
   getPendingPayments,
   
   // Bulk payment operations
-  bulkUpdatePaymentStatus,
-  exportPaymentReport
+  exportPaymentReport,
+
+
 } from '../controllers/finance.controller.js';
 
 import authMiddleware from "../middlewares/auth.middleware.js";
@@ -93,21 +95,17 @@ router.put(
 
 // ==== STUDENT PAYMENT HISTORY ROUTES ====
 
-// Get all payments for a specific student
-router.get(
-  '/students/:studentId/payments',
-  roleMiddleware(['admin', 'finance']),
+router.get("/fees-records",
+  roleMiddleware(["admin", "finance"]),
   authMiddleware,
-  getStudentAllPayments
-);
+  getAllStudentsCourseFees
+)
 
-// Get payment history for a specific student
-router.get(
-  '/students/:studentId/payment-history',
-  roleMiddleware(['admin', 'finance']),
+router.get("/students/:studentId/fees",
+  roleMiddleware(["admin","finance"]),
   authMiddleware,
-  getStudentPaymentHistory
-);
+  getStudentCourseFees
+)
 
 // ==== FINANCE DASHBOARD & REPORTS ROUTES ====
 
@@ -116,15 +114,15 @@ router.get(
   '/dashboard/summary',
   roleMiddleware(['admin', 'finance']),
   authMiddleware,
-  getPaymentSummary
+  getDashboardSummary
 );
 
-// Get monthly payment report
+// Get yearly payment report
 router.get(
-  '/reports/monthly/:year/:month',
+  '/reports/year/:year',
   roleMiddleware(['admin', 'finance']),
   authMiddleware,
-  getMonthlyPaymentReport
+  getYearlyReport
 );
 
 // Get payment analytics
@@ -145,15 +143,6 @@ router.get(
 
 // ==== BULK OPERATIONS ROUTES ====
 
-// Bulk update payment status
-router.put(
-  '/bulk-update-status',
-  roleMiddleware(['admin', 'finance']),
-  authMiddleware,
-  bulkUpdatePaymentStatus
-);
-
-// Export payment report
 router.get(
   '/export/payments',
   roleMiddleware(['admin', 'finance']),
