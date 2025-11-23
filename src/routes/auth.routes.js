@@ -94,6 +94,22 @@ router.post(
   logout
 );
 
+
+// student specific check auth route
+router.get(
+  "/check-auth-student",
+  roleMiddleware(["student"]), // Only allow student role
+  authMiddleware,
+  checkAuth
+);
+
+router.get(
+  "/check-auth-admin",
+  roleMiddleware(["admin"]), // Only allow admin role
+  authMiddleware,
+  checkAuth
+);
+
 router.get(
   "/check-auth",
   roleMiddleware(["admin", "student", "teacher"]), // Allow all roles
