@@ -18,11 +18,28 @@ const authMiddleware = async (req, res, next) => {
       teacher: "teacher_cookie_sms_jwt",
     };
 
+    // Map each frontend's origin to the role it represents. Without this,
+    // a stale cookie from a different portal (e.g. an admin session left
+    // over in the same browser used to test the student portal) would win
+    // just because "admin" is checked first below. Override via env vars
+    // for local dev, where each portal must run on its own port
+    // (e.g. ADMIN_CLIENT_URL=http://localhost:3000, STUDENT_CLIENT_URL=http://localhost:3001).
+    const originToRoleMap = {
+      [process.env.ADMIN_CLIENT_URL || "https://admin-std-portal.vercel.app"]: "admin",
+      [process.env.STUDENT_CLIENT_URL || "https://student-management-system-frontend-self.vercel.app"]: "student",
+    };
+
+    const preferredRole = originToRoleMap[req.headers.origin];
+    const rolesToCheck =
+      preferredRole && req.allowedRoles.includes(preferredRole)
+        ? [preferredRole, ...req.allowedRoles.filter((role) => role !== preferredRole)]
+        : req.allowedRoles;
+
     let token;
     let decodedRole;
 
     // Check for a valid token among the allowed roles
-    for (const role of req.allowedRoles) {
+    for (const role of rolesToCheck) {
       const cookieName = roleToCookieMap[role];
       if (!cookieName) {
         continue; // Skip invalid roles
